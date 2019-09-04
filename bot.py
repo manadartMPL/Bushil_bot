@@ -56,11 +56,12 @@ async def number_guess(ctx):
         if answer.content.lower() == "stop":
             await ctx.send('Looks like game ends now')
             return
-        sender = answer.author
+        sender = answer.author.display_name
         answer = int(answer.content)
 
         if answer == number:
-            await ctx.send(f'Congrats {sender} found the number. It took {number_of_guesses} guesses to find the number')
+            await ctx.send(
+                f'Congrats {sender} found the number. It took {number_of_guesses} guesses to find the number')
             return
 
         if answer < number:
@@ -70,6 +71,7 @@ async def number_guess(ctx):
         if answer > number:
             await ctx.send(f'Your guess is too high. Try a lower number.')
             continue
+
 
 # Just a test on seeing on how embedded messages work on discord
 @bot.command(name='mro', help='Spawns a random monster ranch monster')
@@ -83,6 +85,7 @@ async def monster_spawn(ctx):
     response = discord.Embed(title=monster_names[choice])
     response.set_image(url=monster_pics[choice])
     await ctx.send(embed=response)
+
 
 # A dice rolling command that'll give user random number(s).
 # User can specify how many dice and how many sides the dice has. If they try to use negative numbers for either option
@@ -104,7 +107,20 @@ async def dice_roll(ctx, number_of_dice: int = 1, number_of_sides: int = 6):
         str(random.choice(range(1, number_of_sides + 1)))
         for _ in range(number_of_dice)
     ]
-    await ctx.send(f'{ctx.author} rolled ' + ', '.join(dice))
+    await ctx.send(f'{ctx.author.display_name} rolled ' + ', '.join(dice))
 
+# Just some random auto responses the both will throw out if it sees specific words said by someone
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    if 'good night' in message.content:
+        await message.channel.send(f'Good night {message.author.display_name}')
+    if 'good morning' in message.content:
+        await message.channel.send(f'Good morning {message.author.display_name}')
+    if 'happy birthday' in message.content:
+        await message.channel.send(f'Happy Birthday!')
+
+    await bot.process_commands(message)
 
 bot.run(token)
