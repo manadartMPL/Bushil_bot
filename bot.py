@@ -14,7 +14,7 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 # Setting prefix needed to execute commands, could be almost anything
 # Change prefix in code if want to.
-bot = commands.Bot(command_prefix='*')
+bot = commands.Bot(command_prefix='b!')
 
 
 # Something to just see the bot has connected to channels its been added to and
@@ -36,7 +36,6 @@ async def on_ready():
 # casing does not matter but the message has to be only the word.
 # After each guess the bot will give a hint if the guess is not correct. If correct
 # bot will say how many guesses it took and who said it.
-
 @bot.command(name='guessNumbers', help='Do a number guessing and find the number between 0 and 100')
 async def number_guess(ctx):
     number = random.randint(0, 100)
@@ -72,7 +71,6 @@ async def number_guess(ctx):
             await ctx.send(f'Your guess is too high. Try a lower number.')
             continue
 
-
 # Just a test on seeing on how embedded messages work on discord
 @bot.command(name='mro', help='Spawns a random monster ranch monster')
 async def monster_spawn(ctx):
@@ -86,7 +84,6 @@ async def monster_spawn(ctx):
     response.set_image(url=monster_pics[choice])
     await ctx.send(embed=response)
 
-
 # A dice rolling command that'll give user random number(s).
 # User can specify how many dice and how many sides the dice has. If they try to use negative numbers for either option
 # then bot will give error message. If no additional options given then bot pick number form random 1-6.
@@ -94,7 +91,7 @@ async def monster_spawn(ctx):
              help='*roll_dice [number of dice] [number of sides] Roll up to 6 dice with up to 20 sides.')
 async def dice_roll(ctx, number_of_dice: int = 1, number_of_sides: int = 6):
     if number_of_dice <= 0 or number_of_sides <= 0:
-        await ctx.send(f'Not enough dice to roll {ctx.author}')
+        await ctx.send(f'Not enough dice to roll {ctx.author.display_name}')
         return
 
     if number_of_dice > 6:
@@ -103,11 +100,41 @@ async def dice_roll(ctx, number_of_dice: int = 1, number_of_sides: int = 6):
     if number_of_sides > 20:
         number_of_sides = 20
 
-    dice = [
-        str(random.choice(range(1, number_of_sides + 1)))
-        for _ in range(number_of_dice)
-    ]
+    dice = []
+    for _ in range(number_of_dice):
+        dice.append(str(random.choice(range(1, number_of_sides + 1))))
     await ctx.send(f'{ctx.author.display_name} rolled ' + ', '.join(dice))
+
+# Coin toss command
+# Command to simulate coin tosses. Bot will flip 1-20 coins.
+# Any number less than 1 will be rejected and any number higher than 20 is turned down to 20.
+@bot.command(name='coin_toss',
+             help='*coin_toss [number of coins] Flip up to 20 coins with 1 being the minimum.')
+async def coin_toss(ctx, number_of_coins: int = 1):
+    if number_of_coins <= 0:
+        await ctx.send(f'Not enough coins to flip {ctx.author.display_name}')
+        return
+
+    if number_of_coins > 20:
+        number_of_coins = 20
+
+    coins = []
+    for _ in range(number_of_coins):
+        flip = random.randrange(2)
+        if flip == 0:
+            coins.append('heads')
+        else:
+            coins.append('tails')
+    await ctx.send(f'{ctx.author.display_name} flipped ' + ', '.join(coins))
+
+# A command that lets users make the bot say anything given to the bot.
+# Bot will quickly delete the message of the member commanding the bot to saying the message
+@bot.command(name='say',
+             help='Make the bot say and hide the message commanding the bot.')
+async def say(ctx):
+    msg = ctx.message.content.split(' ', 1)
+    await ctx.message.delete()
+    await ctx.send(msg[1])
 
 # Just some random auto responses the both will throw out if it sees specific words said by someone
 @bot.event
